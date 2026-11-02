@@ -12,7 +12,7 @@ import {
   getProviders,
 } from "@/lib/catalog";
 
-export const revalidate = 3600;
+export const revalidate = 60;
 
 export async function generateStaticParams() {
   const categories = await getCategories();

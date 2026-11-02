@@ -25,7 +25,7 @@ import {
 import { brand } from "@/lib/brand";
 import { formatDate, formatInr } from "@/lib/utils";
 
-export const revalidate = 3600;
+export const revalidate = 60;
 
 const STEPS = [
   {

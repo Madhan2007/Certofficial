@@ -15,7 +15,7 @@ import {
 import { brand } from "@/lib/brand";
 import { Suspense } from "react";
 
-export const revalidate = 3600;
+export const revalidate = 60;
 
 export async function generateStaticParams() {
   const providers = await getProviders();

@@ -32,7 +32,7 @@ import { flags } from "@/lib/flags";
 import type { ExamWithRelations } from "@/lib/types";
 import { formatDate, formatDuration, formatInr, formatUsd } from "@/lib/utils";
 
-export const revalidate = 3600;
+export const revalidate = 60;
 
 export async function generateStaticParams() {
   const cards = await getExamCards();

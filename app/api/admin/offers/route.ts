@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { verifyAdminSession, getAdminSupabase } from "@/lib/admin";
 
@@ -30,10 +31,22 @@ export async function PATCH(request: Request) {
     if (is_active !== undefined) updates.is_active = Boolean(is_active);
 
     const supabase = getAdminSupabase();
-    const { error } = await supabase.from("offers").update(updates).eq("id", id);
+    const { data: updatedOffer, error } = await supabase
+      .from("offers")
+      .update(updates)
+      .eq("id", id)
+      .select("exam_slug")
+      .single();
 
     if (error) {
       return NextResponse.json({ ok: false, error: error.message }, { status: 500 });
+    }
+
+    // Invalidate cached pages so the main site reflects changes immediately
+    revalidatePath("/", "layout");
+    revalidatePath("/exams");
+    if (updatedOffer?.exam_slug) {
+      revalidatePath(`/exams/${updatedOffer.exam_slug}`);
     }
 
     return NextResponse.json({ ok: true });
@@ -42,3 +55,4 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ ok: false, error: message }, { status: 500 });
   }
 }
+
