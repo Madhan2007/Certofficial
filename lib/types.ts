@@ -90,6 +90,7 @@ export interface ExamWithRelations {
 }
 
 export interface Catalog {
+  categories: Category[];
   providers: Provider[];
   exams: Exam[];
   offers: Offer[];

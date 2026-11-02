@@ -32,6 +32,8 @@ export const leadSchema = z.object({
     .boolean()
     .refine((value) => value === true, "Please accept the privacy policy to continue"),
   source: z.string().trim().max(200).optional().or(z.literal("")),
+  /** Honeypot — humans never fill this. */
+  trap: z.string().max(200).optional(),
 });
 
 export type LeadInput = z.input<typeof leadSchema>;

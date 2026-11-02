@@ -3,7 +3,10 @@ import { createClient } from "@supabase/supabase-js";
 
 import { exams as seedExams } from "@/lib/catalog/exams";
 import { offers as seedOffers } from "@/lib/catalog/offers";
-import { categories, providers as seedProviders } from "@/lib/catalog/providers";
+import {
+  categories as seedCategories,
+  providers as seedProviders,
+} from "@/lib/catalog/providers";
 import type {
   Catalog,
   Category,
@@ -18,6 +21,7 @@ import type {
 import { discountPercent } from "@/lib/utils";
 
 const seedCatalog: Catalog = {
+  categories: seedCategories,
   providers: seedProviders,
   exams: seedExams,
   offers: seedOffers,
@@ -77,6 +81,15 @@ function mapProvider(row: Record<string, unknown>): Provider {
   };
 }
 
+function mapCategory(row: Record<string, unknown>): Category {
+  return {
+    slug: String(row.slug) as CategorySlug,
+    name: String(row.name),
+    description: String(row.description ?? ""),
+    icon: String(row.icon ?? ""),
+  };
+}
+
 function mapOffer(row: Record<string, unknown>): Offer {
   return {
     id: String(row.id),
@@ -99,7 +112,8 @@ async function loadCatalog(): Promise<Catalog> {
   if (!client) return seedCatalog;
 
   try {
-    const [providersRes, examsRes, offersRes] = await Promise.all([
+    const [categoriesRes, providersRes, examsRes, offersRes] = await Promise.all([
+      client.from("categories").select("*").eq("is_active", true).order("sort_order"),
       client.from("providers").select("*").order("name"),
       client.from("exams").select("*").eq("is_active", true).order("popularity", {
         ascending: false,
@@ -115,6 +129,9 @@ async function loadCatalog(): Promise<Catalog> {
     }
 
     return {
+      categories: categoriesRes.data?.length
+        ? categoriesRes.data.map(mapCategory)
+        : seedCategories,
       providers: providersRes.data.map(mapProvider),
       exams: examsRes.data.map(mapExam),
       offers: offersRes.data.map(mapOffer),
@@ -132,7 +149,10 @@ export const getProviders = cache(async (): Promise<Provider[]> => {
   return providers;
 });
 
-export const getCategories = cache(async (): Promise<Category[]> => categories);
+export const getCategories = cache(async (): Promise<Category[]> => {
+  const { categories } = await getCatalog();
+  return categories;
+});
 
 export const getExams = cache(async (): Promise<Exam[]> => {
   const { exams } = await getCatalog();
@@ -201,7 +221,7 @@ export const getCategoryPage = cache(
     | undefined
   > => {
     const catalog = await getCatalog();
-    const category = categories.find((c) => c.slug === slug);
+    const category = catalog.categories.find((c) => c.slug === slug);
     if (!category) return undefined;
     const exams = catalog.exams
       .filter((e) => e.category === slug)
@@ -286,5 +306,4 @@ export const getCatalogStats = cache(async (): Promise<CatalogStats> => {
   };
 });
 
-export { categories } from "@/lib/catalog/providers";
 export { getProvider, getCategory } from "@/lib/catalog/providers";

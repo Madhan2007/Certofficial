@@ -138,16 +138,37 @@ the CompTIA official-store rule.
 
 ## Database
 
-Apply the migration with the Supabase CLI:
+Apply both migrations with the Supabase CLI, then seed the catalogue:
 
 ```bash
 supabase link --project-ref <your-project-ref>
 supabase db push
+
+npm run seed:sql                       # regenerate supabase/seed.sql from TS
+psql "$DATABASE_URL" -f supabase/seed.sql
 ```
+
+Without the CLI, paste `supabase/migrations/0001_init.sql`, then
+`0002_categories.sql`, then `supabase/seed.sql` into the SQL editor — in that
+order. The seed is idempotent, so re-running it after a catalogue edit is safe.
+
+After seeding, set the project URL and publishable (anon) key locally and on
+Vercel. The app then reads the catalogue from Postgres and falls back to the
+TypeScript seed only if the database is unreachable or empty.
+
+### Seeding
+
+`supabase/seed.sql` is generated — never hand-edited. It upserts
+`categories`, `providers`, `exams` and `offers` in dependency order, so the
+foreign keys hold. To change a price, description or exam:
+
+1. edit `lib/catalog/*.ts`
+2. `npm run seed:sql`
+3. apply `supabase/seed.sql`
 
 The migration creates three deliberately separate layers:
 
-- **catalogue** — `providers`, `exams`
+- **catalogue** — `categories`, `providers`, `exams`
 - **offer** — `suppliers`, `offers`, `price_history`
 - **inventory** — `voucher_batches`, `voucher_inventory`, `deliveries`
 

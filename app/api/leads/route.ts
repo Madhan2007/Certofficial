@@ -44,6 +44,17 @@ export async function POST(request: Request) {
     );
   }
 
+  // Honeypot: accept silently so bots do not learn the trap, but store nothing.
+  if (
+    payload &&
+    typeof payload === "object" &&
+    typeof (payload as { trap?: unknown }).trap === "string" &&
+    (payload as { trap: string }).trap.trim() !== ""
+  ) {
+    console.warn("[leads] honeypot triggered");
+    return NextResponse.json({ ok: true, reference: leadReference(), demo: false });
+  }
+
   const parsed = leadSchema.safeParse(payload);
   if (!parsed.success) {
     const fieldErrors: Record<string, string[]> = {};
@@ -61,9 +72,10 @@ export async function POST(request: Request) {
   const lead = parsed.data;
   const reference = leadReference();
 
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
   const key =
-    process.env.SUPABASE_SERVICE_ROLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    process.env.SUPABASE_SERVICE_ROLE_KEY?.trim() ||
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY?.trim();
 
   if (!url || !key) {
     // Demo mode: the site works end-to-end without a database configured.

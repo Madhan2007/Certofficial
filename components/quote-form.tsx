@@ -68,6 +68,7 @@ export function QuoteForm({
       message: String(form.get("message") ?? ""),
       intent,
       consent: form.get("consent") === "on",
+      trap: String(form.get("trap") ?? ""),
       source: typeof window !== "undefined" ? window.location.pathname : "/quote",
     };
 
@@ -155,6 +156,18 @@ export function QuoteForm({
 
   return (
     <form onSubmit={handleSubmit} className="rounded-2xl border border-line bg-white p-6 sm:p-7">
+      {/* Honeypot: hidden from people, irresistible to naive form bots. */}
+      <div aria-hidden="true" className="absolute -left-[9999px] h-0 w-0 overflow-hidden">
+        <label htmlFor={`${formId}-trap`}>Leave this field empty</label>
+        <input
+          id={`${formId}-trap`}
+          name="trap"
+          type="text"
+          tabIndex={-1}
+          autoComplete="off"
+          defaultValue=""
+        />
+      </div>
       <fieldset className="mb-6">
         <legend className="mb-2 text-[13px] font-medium text-ink-700">
           What do you need?

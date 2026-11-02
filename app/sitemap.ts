@@ -1,14 +1,18 @@
 import type { MetadataRoute } from "next";
 
 import { brand } from "@/lib/brand";
-import { categories, getExamCards, getProviders } from "@/lib/catalog";
+import { getCategories, getExamCards, getProviders } from "@/lib/catalog";
 import { legalDocuments } from "@/lib/legal";
 
 export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = brand.url.replace(/\/$/, "");
-  const [cards, providers] = await Promise.all([getExamCards(), getProviders()]);
+  const [cards, providers, categories] = await Promise.all([
+    getExamCards(),
+    getProviders(),
+    getCategories(),
+  ]);
 
   const staticRoutes = [
     { path: "/", priority: 1, changeFrequency: "weekly" as const },

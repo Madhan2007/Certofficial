@@ -6,7 +6,6 @@ import { Suspense } from "react";
 
 import { CatalogBrowser } from "@/components/catalog-browser";
 import {
-  categories,
   getCategories,
   getCategoryPage,
   getExamCards,
@@ -15,7 +14,8 @@ import {
 
 export const revalidate = 3600;
 
-export function generateStaticParams() {
+export async function generateStaticParams() {
+  const categories = await getCategories();
   return categories.map((category) => ({ slug: category.slug }));
 }
 

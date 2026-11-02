@@ -3,7 +3,7 @@ import { Mail, MapPin, MessageCircle } from "lucide-react";
 
 import { Wordmark } from "@/components/logo";
 import { brand, supportHours } from "@/lib/brand";
-import { categories } from "@/lib/catalog/providers";
+import { getCategories } from "@/lib/catalog";
 
 const columns = [
   {
@@ -38,7 +38,9 @@ const columns = [
   },
 ];
 
-export function SiteFooter() {
+export async function SiteFooter() {
+  const categories = await getCategories();
+
   return (
     <footer className="mt-24 border-t border-line bg-white">
       <div className="container-page py-14">
